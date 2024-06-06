@@ -11,26 +11,48 @@ import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.submission.mystoryappsv2.data.pref.UserPreference
+import com.submission.mystoryappsv2.data.pref.dataStore
 import com.submission.mystoryappsv2.view.ViewModelFactory
 import com.submission.mystoryappsv2.databinding.ActivityLoginBinding
-import com.submission.mystoryappsv2.view.story.StoryListActivity
+import com.submission.mystoryappsv2.view.main.MainActivity
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
     private val viewModel by viewModels<LoginViewModel> {
         ViewModelFactory.getInstance(this)
     }
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var userPreference: UserPreference // Tambahkan ini
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupView()
-        setupAction()
-        playAnimation()
-    }
+        userPreference = UserPreference.getInstance(dataStore)
 
+        lifecycleScope.launch {
+            userPreference.getSession().collect { user ->
+                if (user.isLogin) {
+                    navigateToStoryList()
+                } else {
+                    setupView()
+                    setupAction()
+                    playAnimation()
+                }
+            }
+        }
+
+
+    }
+    private fun navigateToStoryList() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
+    }
     private fun setupView() {
         @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -54,10 +76,7 @@ class LoginActivity : AppCompatActivity() {
                         setTitle("Yeah!")
                         setMessage("Anda berhasil login. Sudah tidak sabar untuk belajar ya?")
                         setPositiveButton("Lanjut") { _, _ ->
-                            val intent = Intent(context, StoryListActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(intent)
-                            finish()
+                            navigateToStoryList()
                         }
                         create()
                         show()

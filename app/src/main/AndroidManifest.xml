@@ -23,7 +23,6 @@
         <activity
             android:name=".view.login.LoginActivity"
             android:exported="false" />
-        <activity android:name=".view.story.StoryListActivity" />
         <activity android:name=".view.story.StoryDetailActivity" />
         <activity android:name=".view.addstory.AddStoryActivity" />
 
@@ -32,10 +31,21 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Trigger Google Play services to install the backported photo picker module. -->
+        <!--suppress AndroidDomInspection -->
+        <service android:name="com.google.android.gms.metadata.ModuleDependencies"
+            android:enabled="false"
+            android:exported="false"
+            tools:ignore="MissingClass">
+            <intent-filter>
+                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+            </intent-filter>
+            <meta-data android:name="photopicker_activity:0:required" android:value="" />
+        </service>
     </application>
 
 </manifest>

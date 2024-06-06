@@ -19,3 +19,9 @@ data class Story(
     val lat: Double? = null,
     val lon: Double? = null
 ): Parcelable
+
+data class StoryDetailResponse(
+    val error: Boolean,
+    val message: String,
+    val story: Story
+)

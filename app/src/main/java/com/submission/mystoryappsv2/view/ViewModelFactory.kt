@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.submission.mystoryappsv2.data.repository.Repository
 import com.submission.mystoryappsv2.di.Injection
+import com.submission.mystoryappsv2.view.addstory.AddStoryViewModel
 import com.submission.mystoryappsv2.view.login.LoginViewModel
-import com.submission.mystoryappsv2.view.main.MainViewModel
 import com.submission.mystoryappsv2.view.signup.SignupViewModel
-import com.submission.mystoryappsv2.view.story.StoryListViewModel
+import com.submission.mystoryappsv2.view.main.MainViewModel
 
 class ViewModelFactory private constructor(private val repository: Repository) : ViewModelProvider.NewInstanceFactory() {
 
@@ -27,8 +27,8 @@ class ViewModelFactory private constructor(private val repository: Repository) :
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
-            modelClass.isAssignableFrom(StoryListViewModel::class.java) -> {
-                StoryListViewModel(repository) as T
+            modelClass.isAssignableFrom(MainViewModel::class.java) -> {
+                MainViewModel(repository) as T
             }
             modelClass.isAssignableFrom(MainViewModel::class.java) -> {
                 MainViewModel(repository) as T
@@ -39,7 +39,12 @@ class ViewModelFactory private constructor(private val repository: Repository) :
             modelClass.isAssignableFrom(LoginViewModel::class.java) -> {
                 LoginViewModel(repository) as T
             }
+            modelClass.isAssignableFrom(AddStoryViewModel::class.java) -> {
+                AddStoryViewModel(repository) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+
+
         }
     }
 }

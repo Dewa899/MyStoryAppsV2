@@ -1,18 +1,18 @@
 package com.submission.mystoryappsv2.view.addstory
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.submission.mystoryappsv2.R
 import com.submission.mystoryappsv2.view.ViewModelFactory
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -31,72 +31,91 @@ class AddStoryActivity : AppCompatActivity() {
         ViewModelFactory.getInstance(this)
     }
 
+    // Inisialisasi getContent dengan registerForActivityResult
+    private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            selectedPhotoUri = it
+            addPhotoImageView.setImageURI(it)
+
+            // Mengonversi URI menjadi File
+            selectedPhotoFile = getFileFromUri(it)
+        }
+    }
+
+    // Metode untuk mengonversi URI menjadi File
+    private fun getFileFromUri(uri: Uri): File? {
+        val contentResolver = applicationContext.contentResolver
+        var filePath: String? = null
+
+        if ("content".equals(uri.scheme, ignoreCase = true)) {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val columnIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+                    filePath = it.getString(columnIndex)
+                }
+            }
+        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
+            filePath = uri.path
+        }
+
+        return filePath?.let { File(it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_story)
 
+        // Inisialisasi view
         descriptionEditText = findViewById(R.id.ed_add_description)
         addPhotoImageView = findViewById(R.id.iv_add_photo)
         choosePhotoButton = findViewById(R.id.button_choose_photo)
         addButton = findViewById(R.id.button_add)
 
+        // Set listener untuk tombol pilih foto
         choosePhotoButton.setOnClickListener {
-            openGallery()
+            openPhotoPicker()
         }
 
+        // Set listener untuk tombol tambahkan cerita
         addButton.setOnClickListener {
             addStory()
         }
     }
 
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
+    // Metode untuk membuka pemilih foto
+    private fun openPhotoPicker() {
+        getContent.launch("image/*")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-            selectedPhotoUri = data?.data
-            selectedPhotoUri?.let {
-                addPhotoImageView.setImageURI(it)
-                selectedPhotoFile = uriToFile(it)
-            }
-        }
-    }
-
-    private fun uriToFile(uri: Uri): File {
-        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = contentResolver.query(uri, filePathColumn, null, null, null)
-        cursor?.moveToFirst()
-        val columnIndex = cursor?.getColumnIndex(filePathColumn[0])
-        val filePath = cursor?.getString(columnIndex!!)
-        cursor?.close()
-        return File(filePath)
-    }
-
+    // Metode untuk menambahkan cerita
     private fun addStory() {
         val description = descriptionEditText.text.toString()
         val file = selectedPhotoFile
 
+        // Memeriksa apakah deskripsi dan file terisi
         if (description.isNotEmpty() && file != null) {
-            val descriptionPart = description.toRequestBody("text/plain".toMediaTypeOrNull())
+            Log.d("AddStoryActivity", "Description: $description, File: $file")
+
+            val descriptionPart = description.toRequestBody("text/plain".toMediaType())
             val photoPart = MultipartBody.Part.createFormData(
-                "photo", file.name, file.asRequestBody("image/*".toMediaTypeOrNull())
+                "photo", file.name, file.asRequestBody("image/jpeg".toMediaType())
             )
 
+            // Memanggil ViewModel untuk menambahkan cerita
             viewModel.addStory(descriptionPart, photoPart).observe(this) { response ->
                 if (!response.error) {
                     // Berhasil menambahkan cerita
+                    Log.d("AddStoryActivity", "Story added successfully")
                     finish() // Kembali ke StoryListActivity
                 } else {
                     // Tangani error
+                    Log.e("AddStoryActivity", "Error adding story: ${response.message}")
                 }
             }
+        } else {
+            // Menampilkan log jika deskripsi atau file kosong
+            Log.e("AddStoryActivity", "Description or file is empty")
         }
-    }
-
-    companion object {
-        const val REQUEST_CODE_PICK_IMAGE = 1
     }
 }

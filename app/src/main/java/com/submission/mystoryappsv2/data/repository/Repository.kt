@@ -1,5 +1,6 @@
 package com.submission.mystoryappsv2.data.repository
 
+import android.util.Log
 import com.submission.mystoryappsv2.data.pref.UserModel
 import com.submission.mystoryappsv2.data.pref.UserPreference
 import com.submission.mystoryappsv2.data.remote.ApiResponse
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import retrofit2.Response
 
 class Repository private constructor(
     private val apiService: ApiService,
@@ -38,10 +40,9 @@ class Repository private constructor(
         userPreference.logout()
     }
 
-    // Story-related methods
     suspend fun addStory(description: RequestBody, photo: MultipartBody.Part): ApiResponse {
         val token = userPreference.getSession().first().token
-        return apiService.addStory("Bearer $token", description, photo)
+        return apiService.addStory("Bearer $token", description, photo,null ,null)
     }
 
     suspend fun getStories(token: String, page: Int? = null, size: Int? = null, location: Int? = 0): List<Story> {
@@ -53,6 +54,39 @@ class Repository private constructor(
         }
     }
 
+    suspend fun getStoryDetail(storyId: String): Story? {
+        val token = userPreference.getSession().first().token
+        Log.d("Repository", "Token: $token, Story ID: $storyId")
+
+        if (token.isNotEmpty()) {
+            try {
+                val response = apiService.getStoryDetail("Bearer $token", storyId)
+                logResponseDetails(response)
+
+                if (response.isSuccessful) {
+                    Log.d("Repository", "Response: ${response.body()}")
+                    return response.body()?.story
+                } else {
+                    Log.e("Repository", "Error response code: ${response.code()}")
+                    Log.e("Repository", "Error response message: ${response.message()}")
+                    Log.e("Repository", "Error response body: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("Repository", "Exception during API call", e)
+            }
+        } else {
+            Log.e("Repository", "Token is empty")
+        }
+        return null
+    }
+    private fun logResponseDetails(response: Response<*>) {
+        Log.d("Repository", "Response URL: ${response.raw().request.url}")
+        Log.d("Repository", "Response headers: ${response.headers()}")
+        Log.d("Repository", "Response body: ${response.body()}")
+        if (!response.isSuccessful) {
+            Log.e("Repository", "Error response: ${response.errorBody()?.string()}")
+        }
+    }
     companion object {
         @Volatile
         private var instance: Repository? = null
