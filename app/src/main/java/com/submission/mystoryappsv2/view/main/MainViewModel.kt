@@ -29,9 +29,9 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
             try {
                 repository.logout()
             } catch (e: Exception) {
-                // Tangani exception di sini, jika diperlukan
+                
                 Log.e("MainViewModel", "Failed to logout", e)
-                // Misalnya, tampilkan pesan kesalahan kepada pengguna
+                
             }
         }
     }

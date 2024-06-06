@@ -55,4 +55,6 @@
     <string name="signup">Signup\n</string>
     <string name="title_welcome_page">Selamat Datang di MyStory\n</string>
     <string name="message_welcome_page">daftarkan dirimu segera atau masuk ke akunmu sekarang</string>
+    <string name="image">Image</string>
+    <string name="add_story">Add Story</string>
 </resources>

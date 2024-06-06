@@ -41,7 +41,7 @@ class UserPreference(private val dataStore: DataStore<Preferences>) {
     suspend fun saveSession(user: UserModel) {
         dataStore.edit { preferences ->
             preferences[tokenKey] = user.token
-            preferences[loginStatusKey] = user.isLogin // Tambahkan ini
+            preferences[loginStatusKey] = user.isLogin 
         }
     }
 

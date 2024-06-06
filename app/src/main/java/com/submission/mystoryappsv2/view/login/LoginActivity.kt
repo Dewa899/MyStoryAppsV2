@@ -24,7 +24,7 @@ class LoginActivity : AppCompatActivity() {
         ViewModelFactory.getInstance(this)
     }
     private lateinit var binding: ActivityLoginBinding
-    private lateinit var userPreference: UserPreference // Tambahkan ini
+    private lateinit var userPreference: UserPreference 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

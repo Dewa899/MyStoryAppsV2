@@ -1,7 +1,5 @@
 package com.submission.mystoryappsv2.view.main
 
-import android.app.Activity
-import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -60,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         val adapter = StoryAdapter { story, view ->
-            onItemClick(story,view)
+            onItemClick(story, view)
         }
 
 
@@ -70,11 +68,12 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, AddStoryActivity::class.java)
             startActivity(intent)
         }
-        addStoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                loadStories()
+        addStoryLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    loadStories()
+                }
             }
-        }
 
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -92,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         })
         loadStories()
     }
+
     private fun logout() {
         lifecycleScope.launch {
             try {
@@ -100,10 +100,11 @@ class MainActivity : AppCompatActivity() {
                 finishAffinity()
             } catch (e: Exception) {
                 Log.e("MainActivity", "Failed to logout", e)
-                // Handle the exception, e.g., show an error message to the user
+
             }
         }
     }
+
     private fun loadStories() {
         val userPreference = UserPreference.getInstance(dataStore)
         currentPage = 1
@@ -113,7 +114,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val userModel = userPreference.getSession().first()
-                if (userModel.isLogin) { // Memeriksa status login sebelum memuat cerita
+                if (userModel.isLogin) {
                     val token = userModel.token
                     viewModel.fetchStories("Bearer $token", currentPage)
                     viewModel.stories.observe(this@MainActivity) { stories ->
@@ -123,7 +124,6 @@ class MainActivity : AppCompatActivity() {
                         recyclerView.smoothScrollToPosition(0)
                     }
                 } else {
-                    // Token kosong, arahkan kembali ke LoginActivity
                     startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                     finish()
                 }
@@ -144,7 +144,8 @@ class MainActivity : AppCompatActivity() {
             if (token.isNotEmpty()) {
                 viewModel.fetchStories("Bearer $token", currentPage)
                 viewModel.stories.observe(this@MainActivity) { stories ->
-                    val currentList = (recyclerView.adapter as StoryAdapter).currentList.toMutableList()
+                    val currentList =
+                        (recyclerView.adapter as StoryAdapter).currentList.toMutableList()
                     currentList.addAll(stories)
                     (recyclerView.adapter as StoryAdapter).submitList(currentList)
                     isLoading = false
@@ -183,21 +184,23 @@ class MainActivity : AppCompatActivity() {
             handler.postDelayed(this, POLLING_INTERVAL)
         }
     }
-    private fun onItemClick(story: Story,itemView: View) {
+
+    private fun onItemClick(story: Story, itemView: View) {
         val intent = Intent(this, StoryDetailActivity::class.java).apply {
             putExtra("EXTRA_STORY_ID", story.id)
         }
 
-        val optionsCompat: ActivityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
-            this@MainActivity,
-            Pair(itemView.findViewById(R.id.iv_item_photo), "image"),
-            Pair(itemView.findViewById(R.id.tv_item_name), "name")
-        )
+        val optionsCompat: ActivityOptionsCompat =
+            ActivityOptionsCompat.makeSceneTransitionAnimation(
+                this@MainActivity,
+                Pair(itemView.findViewById(R.id.iv_item_photo), "image"),
+                Pair(itemView.findViewById(R.id.tv_item_name), "name")
+            )
 
         ActivityCompat.startActivity(this@MainActivity, intent, optionsCompat.toBundle())
     }
 
     companion object {
-        private const val POLLING_INTERVAL = 30000L // 1 minute in milliseconds (60000 milliseconds)
+        private const val POLLING_INTERVAL = 30000L
     }
 }

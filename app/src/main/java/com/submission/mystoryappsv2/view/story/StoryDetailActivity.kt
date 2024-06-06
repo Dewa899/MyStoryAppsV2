@@ -52,7 +52,7 @@ class StoryDetailActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e("StoryDetailActivity", "Error fetching story", e)
             }finally {
-                // Menyembunyikan ProgressBar ketika proses pengambilan data selesai
+                
                 progressBar.visibility = View.GONE
             }
         }

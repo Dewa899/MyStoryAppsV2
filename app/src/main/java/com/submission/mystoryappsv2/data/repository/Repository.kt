@@ -19,7 +19,7 @@ class Repository private constructor(
     private val userPreference: UserPreference
 ) {
 
-    // User-related methods
+    
     suspend fun register(name: String, email: String, password: String): RegisterResponse {
         return apiService.register(name, email, password)
     }
@@ -32,9 +32,6 @@ class Repository private constructor(
         userPreference.saveSession(user)
     }
 
-    suspend fun getSession(): Flow<UserModel> {
-        return userPreference.getSession()
-    }
 
     suspend fun logout() {
         userPreference.logout()

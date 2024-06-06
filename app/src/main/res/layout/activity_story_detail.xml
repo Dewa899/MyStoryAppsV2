@@ -13,6 +13,7 @@
         android:layout_height="156dp">
         <ImageView
             android:id="@+id/iv_detail_photo"
+            android:contentDescription="@string/image"
             android:transitionName="image"
             android:layout_width="match_parent"
             android:layout_height="200dp"
