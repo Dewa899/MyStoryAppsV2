@@ -45,7 +45,7 @@
     </string>
     <string name="password">Password</string>
     <string name="email">Email</string>
-    <string name="message_login_page">Login</string>
+    <string name="message_login_page">Ayo Login sekarang untuk tambahkan cerita terbarumu atau Daftar akun baru</string>
     <string name="title_login_page">Login\n</string>
     <string name="login">Login</string>
     <string name="logout">Logout</string>
@@ -57,4 +57,5 @@
     <string name="message_welcome_page">daftarkan dirimu segera atau masuk ke akunmu sekarang</string>
     <string name="image">Image</string>
     <string name="add_story">Add Story</string>
+    <string name="welcome">Selamat Datang di Story Apps</string>
 </resources>
