@@ -58,4 +58,10 @@
     <string name="image">Image</string>
     <string name="add_story">Add Story</string>
     <string name="welcome">Selamat Datang di Story Apps</string>
+    <string name="hint_text">Masukkan Deskripsi Story</string>
+    <string name="clear_button_desc">Hapus semua deskripsi</string>
+    <string name="photo">Photo</string>
+    <string name="choose_photo">Choose Photo</string>
+    <string name="add_story_button">Add Story</string>
+    <string name="selfie_man">Selfie Man</string>
 </resources>

@@ -7,9 +7,11 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.submission.mystoryappsv2.R
 import com.submission.mystoryappsv2.databinding.ActivitySignupBinding
 import com.submission.mystoryappsv2.view.ViewModelFactory
 
@@ -18,12 +20,15 @@ class SignupActivity : AppCompatActivity() {
     private val viewModel: SignupViewModel by viewModels {
         ViewModelFactory.getInstance(this)
     }
+    private lateinit var progressBar: ProgressBar
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        progressBar = findViewById(R.id.progress_bar)
+        progressBar.visibility = View.GONE
         setupView()
         setupAction()
         playAnimation()
@@ -47,17 +52,21 @@ class SignupActivity : AppCompatActivity() {
             val name = binding.nameEditText.text.toString()
             val email = binding.emailEditText.text.toString()
             val password = binding.passwordEditText.text.toString()
+            progressBar.visibility = View.VISIBLE
+
 
             viewModel.register(name, email, password) { success, message ->
                 if (success) {
                     AlertDialog.Builder(this).apply {
+                        progressBar.visibility = View.GONE
                         setTitle("Yeah!")
-                        setMessage("Akun dengan $email sudah jadi nih. Yuk, login dan belajar coding.")
+                        setMessage("Akun dengan $email sudah jadi nih. Yuk, buat story terbaikmu!.")
                         setPositiveButton("Lanjut") { _, _ -> finish() }
                         create()
                         show()
                     }
                 } else {
+                    progressBar.visibility = View.GONE
                     AlertDialog.Builder(this).apply {
                         setTitle("Register Gagal")
                         setMessage(message)
