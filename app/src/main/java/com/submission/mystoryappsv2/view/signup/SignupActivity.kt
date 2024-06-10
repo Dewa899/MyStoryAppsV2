@@ -50,8 +50,8 @@ class SignupActivity : AppCompatActivity() {
     private fun setupAction() {
         binding.signupButton.setOnClickListener {
             val name = binding.nameEditText.text.toString()
-            val email = binding.emailEditText.text.toString()
-            val password = binding.passwordEditText.text.toString()
+            val email = binding.emailEditTextLayout.text.toString()
+            val password = binding.passwordEditTextLayout.text.toString()
             progressBar.visibility = View.VISIBLE
 
 
