@@ -64,4 +64,6 @@
     <string name="choose_photo">Choose Photo</string>
     <string name="add_story_button">Add Story</string>
     <string name="selfie_man">Selfie Man</string>
+    <string name="invalid_email_error">Invalid email format</string>
+    <string name="invalid_email">Invalid Email Format</string>
 </resources>

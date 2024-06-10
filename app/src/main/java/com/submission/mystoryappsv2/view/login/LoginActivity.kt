@@ -16,8 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import com.submission.mystoryappsv2.R
 import com.submission.mystoryappsv2.data.pref.UserPreference
 import com.submission.mystoryappsv2.data.pref.dataStore
-import com.submission.mystoryappsv2.view.ViewModelFactory
 import com.submission.mystoryappsv2.databinding.ActivityLoginBinding
+import com.submission.mystoryappsv2.view.ViewModelFactory
 import com.submission.mystoryappsv2.view.main.MainActivity
 import com.submission.mystoryappsv2.view.signup.SignupActivity
 import kotlinx.coroutines.launch
@@ -30,6 +30,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var userPreference: UserPreference
     private lateinit var progressBar: ProgressBar
     private var isProcessing = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -51,12 +52,14 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun navigateToStoryList() {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()
     }
+
     private fun setupView() {
         @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -73,33 +76,45 @@ class LoginActivity : AppCompatActivity() {
     private fun setupAction() {
         binding.loginButton.setOnClickListener {
             if (!isProcessing) {
-                isProcessing = true
-                binding.loginButton.isEnabled = false
-                binding.progressBar.visibility = View.VISIBLE
-
                 val email = binding.emailEditText.text.toString()
                 val password = binding.passwordEditText.text.toString()
-                viewModel.login(email, password) { success, message ->
-                    binding.progressBar.visibility = View.GONE
-                    isProcessing = false
-                    binding.loginButton.isEnabled = true
 
-                    if (success) {
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        AlertDialog.Builder(this).apply {
-                            setTitle("Login Gagal")
-                            setMessage("Email atau Password salah: $message")
-                            setPositiveButton("OK", null)
-                            create()
-                            show()
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    isProcessing = true
+                    binding.loginButton.isEnabled = false
+                    binding.progressBar.visibility = View.VISIBLE
+
+                    viewModel.login(email, password) { success, message ->
+                        binding.progressBar.visibility = View.GONE
+                        isProcessing = false
+                        binding.loginButton.isEnabled = true
+
+                        if (success) {
+                            val intent = Intent(this, MainActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            AlertDialog.Builder(this).apply {
+                                setTitle("Login Gagal")
+                                setMessage("Email atau Password salah: $message")
+                                setPositiveButton("OK", null)
+                                create()
+                                show()
+                            }
                         }
+                    }
+                } else {
+                    AlertDialog.Builder(this).apply {
+                        setTitle("Login Gagal")
+                        setMessage("Email dan Password tidak boleh kosong")
+                        setPositiveButton("OK", null)
+                        create()
+                        show()
                     }
                 }
             }
         }
+
         binding.signupButton.setOnClickListener {
             if (!isProcessing) {
                 val intent = Intent(this, SignupActivity::class.java)
@@ -116,20 +131,13 @@ class LoginActivity : AppCompatActivity() {
         }.start()
 
         val title = ObjectAnimator.ofFloat(binding.titleTextView, View.ALPHA, 1f).setDuration(100)
-        val message =
-            ObjectAnimator.ofFloat(binding.messageTextView, View.ALPHA, 1f).setDuration(100)
-        val emailTextView =
-            ObjectAnimator.ofFloat(binding.emailTextView, View.ALPHA, 1f).setDuration(100)
-        val emailEditTextLayout =
-            ObjectAnimator.ofFloat(binding.emailEditTextLayout, View.ALPHA, 1f).setDuration(100)
-        val passwordTextView =
-            ObjectAnimator.ofFloat(binding.passwordTextView, View.ALPHA, 1f).setDuration(100)
-        val passwordEditTextLayout =
-            ObjectAnimator.ofFloat(binding.passwordEditTextLayout, View.ALPHA, 1f).setDuration(100)
-        val login =
-            ObjectAnimator.ofFloat(binding.loginButton, View.ALPHA, 1f).setDuration(100)
-        val signup =
-            ObjectAnimator.ofFloat(binding.signupButton, View.ALPHA, 1f).setDuration(100)
+        val message = ObjectAnimator.ofFloat(binding.messageTextView, View.ALPHA, 1f).setDuration(100)
+        val emailTextView = ObjectAnimator.ofFloat(binding.emailTextView, View.ALPHA, 1f).setDuration(100)
+        val emailEditTextLayout = ObjectAnimator.ofFloat(binding.emailEditText, View.ALPHA, 1f).setDuration(100)
+        val passwordTextView = ObjectAnimator.ofFloat(binding.passwordTextView, View.ALPHA, 1f).setDuration(100)
+        val passwordEditTextLayout = ObjectAnimator.ofFloat(binding.passwordEditTextLayout, View.ALPHA, 1f).setDuration(100)
+        val login = ObjectAnimator.ofFloat(binding.loginButton, View.ALPHA, 1f).setDuration(100)
+        val signup = ObjectAnimator.ofFloat(binding.signupButton, View.ALPHA, 1f).setDuration(100)
 
         AnimatorSet().apply {
             playSequentially(
@@ -145,6 +153,4 @@ class LoginActivity : AppCompatActivity() {
             startDelay = 100
         }.start()
     }
-
-
 }
