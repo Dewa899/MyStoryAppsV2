@@ -19,17 +19,17 @@ class ClearableEditText @JvmOverloads constructor(
     private val clearButton: ImageButton
 
     init {
-        // Inflate layout dari XML
+        
         LayoutInflater.from(context).inflate(R.layout.view_clearable_edit_text, this, true)
         editText = findViewById(R.id.edit_text)
         clearButton = findViewById(R.id.clear_button)
 
-        // Set onClick listener untuk clear button
+        
         clearButton.setOnClickListener {
             editText.text.clear()
         }
 
-        // Tampilkan/ sembunyikan tombol clear berdasarkan teks di EditText
+        
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -40,7 +40,7 @@ class ClearableEditText @JvmOverloads constructor(
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // Atribut kustom (opsional)
+        
         attrs?.let {
             val typedArray = context.obtainStyledAttributes(it, R.styleable.ClearableEditText, 0, 0)
             val hint = typedArray.getString(R.styleable.ClearableEditText_hint)
