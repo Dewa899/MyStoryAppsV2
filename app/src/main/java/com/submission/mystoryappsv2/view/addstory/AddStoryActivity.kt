@@ -2,7 +2,7 @@ package com.submission.mystoryappsv2.view.addstory
 
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
@@ -17,6 +17,8 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 
 class AddStoryActivity : AppCompatActivity() {
 
@@ -41,21 +43,40 @@ class AddStoryActivity : AppCompatActivity() {
 
     private fun getFileFromUri(uri: Uri): File? {
         val contentResolver = applicationContext.contentResolver
-        var filePath: String? = null
+        val fileName = getFileName(uri) ?: return null
+        val tempFile = File(applicationContext.cacheDir, fileName)
 
-        if ("content".equals(uri.scheme, ignoreCase = true)) {
-            val cursor = contentResolver.query(uri, null, null, null, null)
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    val columnIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-                    filePath = it.getString(columnIndex)
-                }
-            }
-        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
-            filePath = uri.path
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val outputStream = FileOutputStream(tempFile)
+            copyStream(inputStream, outputStream)
+            inputStream.close()
+            outputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
         }
 
-        return filePath?.let { File(it) }
+        return tempFile
+    }
+
+    private fun getFileName(uri: Uri): String? {
+        var name: String? = null
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                name = it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+            }
+        }
+        return name
+    }
+
+    private fun copyStream(input: InputStream, output: FileOutputStream) {
+        val buffer = ByteArray(1024)
+        var length: Int
+        while (input.read(buffer).also { length = it } > 0) {
+            output.write(buffer, 0, length)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
