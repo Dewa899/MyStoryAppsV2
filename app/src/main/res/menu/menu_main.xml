@@ -4,14 +4,8 @@
     tools:context="com.submission.storyapps.main.MainActivity">
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_maps"
         android:icon="@drawable/ic_maps"
-        android:title="Maps"
+        android:title="@string/title_activity_maps"
         app:showAsAction="ifRoom" />
 </menu>

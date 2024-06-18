@@ -24,7 +24,7 @@ android {
 
     }
     defaultConfig {
-        buildConfigField("String", "BASE_URL", "\"https://story-api.dicoding.dev/v1/\"".toString())
+        buildConfigField("String", "BASE_URL", "\"https://story-api.dicoding.dev/v1/\"")
     }
     buildTypes {
         release {
@@ -87,12 +87,12 @@ dependencies {
     testImplementation(libs.mockito.inline)
 
     testImplementation ("junit:junit:4.13.2")
-    implementation ("androidx.core:core-ktx:1.7.0")
+    implementation ("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.appcompat:appcompat:1.7.0")
-    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.8.0")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1")
-    implementation ("androidx.constraintlayout:constraintlayout:2.1.3")
-    implementation ("com.google.android.material:material:1.5.0")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.8.2")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
+    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation ("com.google.android.material:material:1.12.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
 
@@ -103,9 +103,9 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     implementation ("com.google.android.gms:play-services-phenotype:17.0.0")
 
-    implementation("androidx.core:core-ktx:1.10.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
