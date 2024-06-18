@@ -36,7 +36,7 @@ class StoryPagingAdapter(private val onClick: (Story, View) -> Unit) :
             Glide.with(binding.root)
                 .load(story.photoUrl)
                 .centerCrop()
-                .placeholder(R.drawable.image_placeholder)
+                .placeholder(R.drawable.image_placeholder) // Placeholder drawable
                 .into(binding.ivItemPhoto)
 
             binding.root.setOnClickListener {

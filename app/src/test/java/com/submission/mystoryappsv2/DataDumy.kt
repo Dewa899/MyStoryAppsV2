@@ -4,20 +4,29 @@ import androidx.paging.PagingData
 import com.submission.mystoryappsv2.data.pref.UserModel
 import com.submission.mystoryappsv2.data.remote.LoginResponse
 import com.submission.mystoryappsv2.data.remote.LoginResult
+import com.submission.mystoryappsv2.data.remote.RegisterResponse
 import com.submission.mystoryappsv2.data.remote.Story
+import com.submission.mystoryappsv2.data.remote.StoryResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import java.io.File
 
 object DataDummy {
     fun generateToken() = "token"
-    private fun generateName() = "name"
-    private fun generateEmail() = "email@email.com"
+    fun generateName() = "name"
+    fun generateEmail() = "email@email.com"
+    fun generatePassword() = "password"
 
     fun generateUserModel() = UserModel(
         email = generateEmail(),
         token = generateToken(),
         isLogin = true
     )
+
+    fun generateFile() = File("file")
+    fun generateDesc() = "desc"
+
+    fun generateErrorResponse() = "error"
 
     fun generateLoginResponse() = LoginResponse(
          false, "success",
@@ -27,6 +36,8 @@ object DataDummy {
             generateToken()
         )
     )
+
+    fun generateRegisterResponse() = RegisterResponse(false, "success")
 
     fun generateStoryList() = List(6) { index ->
         Story(
@@ -40,6 +51,12 @@ object DataDummy {
         )
     }
 
+    fun generateStoryResponse() = StoryResponse( false, "success",generateStoryList())
+
+    /*fun generateAddResponse() = AddResponse(
+        error = false,
+        message = "success"
+    )*/
     fun generateStoryPagingData(): Flow<PagingData<Story>> {
         val storyList = generateStoryList()
         return flowOf(PagingData.from(storyList))

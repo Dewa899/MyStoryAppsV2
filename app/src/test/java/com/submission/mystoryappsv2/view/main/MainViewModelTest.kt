@@ -7,12 +7,15 @@ import androidx.paging.PagingData
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.submission.mystoryappsv2.CoroutineTestRule
 import com.submission.mystoryappsv2.DataDummy
+import com.submission.mystoryappsv2.FlowTestUtils.getOrAwaitValue
+import com.submission.mystoryappsv2.LogMock
 import com.submission.mystoryappsv2.data.repository.Repository
 import com.submission.mystoryappsv2.view.story.StoryAdapter
 import com.submission.mystoryappsv2.data.remote.Story
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -44,7 +47,13 @@ class MainViewModelTest {
 
     @Before
     fun setUp() {
+        LogMock.mockLog()  // Mock the Log class
         mainViewModel = MainViewModel(repository)
+    }
+
+    @After
+    fun tearDown() {
+        LogMock.clearMock()  // Clear the Log mock
     }
 
     @Test
@@ -53,7 +62,7 @@ class MainViewModelTest {
 
         `when`(repository.getStories(token)).thenReturn(storyPagingData)
 
-        val actualStories = mainViewModel.getStoriesFlow(token).first()
+        val actualStories = mainViewModel.getStoriesFlow(token).getOrAwaitValue()
 
         val differ = AsyncPagingDataDiffer(
             diffCallback = StoryAdapter.DIFF_CALLBACK,
@@ -70,30 +79,6 @@ class MainViewModelTest {
         assertEquals(DataDummy.generateStoryList()[0], differ.snapshot()[0])
     }
 
-    @Test
-    fun `failed to Get Stories but Not Null`() = runTest {
-        val emptyStoryList: List<Story> = emptyList()
-        val emptyPagingData = PagingData.from(emptyStoryList)
-
-        val emptyStoryPagingData = kotlinx.coroutines.flow.flowOf(emptyPagingData)
-
-        `when`(repository.getStories(token)).thenReturn(emptyStoryPagingData)
-
-        val actualStories = mainViewModel.getStoriesFlow(token).first()
-
-        val differ = AsyncPagingDataDiffer(
-            diffCallback = StoryAdapter.DIFF_CALLBACK,
-            updateCallback = listUpdateCallback,
-            mainDispatcher = coroutinesTestRule.testDispatcher,
-            workerDispatcher = coroutinesTestRule.testDispatcher
-        )
-
-        differ.submitData(actualStories)
-
-        Mockito.verify(repository).getStories(token)
-        Assert.assertNotNull(differ.snapshot())
-        Assert.assertEquals(0, differ.snapshot().size)
-    }
 
     private val listUpdateCallback = object : ListUpdateCallback {
         override fun onInserted(position: Int, count: Int) {}

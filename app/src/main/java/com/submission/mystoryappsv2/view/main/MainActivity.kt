@@ -78,27 +78,14 @@ class MainActivity : AppCompatActivity() {
         addStoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 lifecycleScope.launch {
-                    val userPreference = UserPreference.getInstance(dataStore)
-                    val userModel = userPreference.getSession().first()
-                    if (userModel.isLogin) {
-                        val token = userModel.token
-                        viewModel.refreshStories()
-                        viewModel.getStoriesFlow("Bearer $token").collectLatest { pagingData ->
-                            adapter.submitData(pagingData)
-                        }
-                    } else {
-                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
-                        finish()
-                    }
+                    viewModel.refreshStories()
                 }
             }
         }
 
         addStoryButton.setOnClickListener {
             val intent = Intent(this, AddStoryActivity::class.java)
-/*
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-*/
             addStoryLauncher.launch(intent)
         }
 

@@ -17,6 +17,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
+
 class Repository private constructor(
     private val apiService: ApiService,
     private val userPreference: UserPreference
@@ -51,14 +52,14 @@ class Repository private constructor(
     }
 
     suspend fun getStoriesWithLocation(): List<Story> {
-        val location = 1
+        val location = 1 // Set the location parameter here (1 for true, 0 for false)
         val token = userPreference.getSession().first().token
         return try {
             val response = apiService.getStories("Bearer $token", location = location)
-            response.listStory
+            response.listStory // Assuming listStory is the list of stories from your API response
         } catch (e: Exception) {
             e.printStackTrace()
-            emptyList()
+            emptyList() // Return an empty list in case of error
         }
     }
 
