@@ -96,7 +96,9 @@ class MainActivity : AppCompatActivity() {
 
         addStoryButton.setOnClickListener {
             val intent = Intent(this, AddStoryActivity::class.java)
+/*
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+*/
             addStoryLauncher.launch(intent)
         }
 
