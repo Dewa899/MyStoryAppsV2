@@ -68,4 +68,5 @@
     <string name="invalid_email">Invalid Email Format</string>
     <string name="email_hint">Enter your email</string>
     <string name="enter_your_password">Enter your password</string>
+    <string name="title_activity_maps">MapsActivity</string>
 </resources>

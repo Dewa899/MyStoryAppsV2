@@ -2,15 +2,16 @@ package com.submission.mystoryappsv2.view.main
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,6 +31,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import androidx.core.app.ActivityCompat
 import androidx.core.util.Pair
+import androidx.paging.LoadState
+import com.submission.mystoryappsv2.data.adapter.StoryPagingAdapter
+import com.submission.mystoryappsv2.view.maps.MapsActivity
+import kotlinx.coroutines.flow.collectLatest
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,59 +42,103 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var addStoryButton: FloatingActionButton
     private lateinit var progressBar: ProgressBar
-
     private val viewModel: MainViewModel by viewModels {
         ViewModelFactory.getInstance(this)
     }
     private lateinit var addStoryLauncher: ActivityResultLauncher<Intent>
-    private var currentPage = 1
-    private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         val logoutButton = findViewById<ExtendedFloatingActionButton>(R.id.logout_button)
         logoutButton.setOnClickListener {
             logout()
         }
+
         recyclerView = findViewById(R.id.recycler_view)
         addStoryButton = findViewById(R.id.add_story_btn)
         progressBar = findViewById(R.id.progress_bar)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = StoryAdapter { story, view ->
+        val adapter = StoryPagingAdapter { story, view ->
             onItemClick(story, view)
         }
-
 
         recyclerView.adapter = adapter
 
         addStoryButton.setOnClickListener {
             val intent = Intent(this, AddStoryActivity::class.java)
-            startActivity(intent)
+            addStoryLauncher.launch(intent)
         }
-        addStoryLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    loadStories()
+
+        addStoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                lifecycleScope.launch {
+                    viewModel.refreshStories()
                 }
             }
+        }
 
-
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val visibleItemCount = layoutManager.childCount
-                val totalItemCount = layoutManager.itemCount
-                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-
-                if (!isLoading && visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0) {
-                    loadMoreStories()
+        lifecycleScope.launch {
+            val userPreference = UserPreference.getInstance(dataStore)
+            val userModel = userPreference.getSession().first()
+            if (userModel.isLogin) {
+                val token = userModel.token
+                viewModel.getStoriesFlow("Bearer $token").collectLatest { pagingData ->
+                    adapter.submitData(pagingData)
                 }
+            } else {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finish()
             }
-        })
-        loadStories()
+        }
+
+        adapter.addLoadStateListener { loadState ->
+            progressBar.visibility = if (loadState.refresh is LoadState.Loading) View.VISIBLE else View.GONE
+
+            val errorState = loadState.source.append as? LoadState.Error
+                ?: loadState.source.prepend as? LoadState.Error
+                ?: loadState.append as? LoadState.Error
+                ?: loadState.prepend as? LoadState.Error
+            errorState?.let {
+                Log.e("MainActivity", "Paging error: ${it.error}")
+            }
+        }
+    }
+    /*override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            val userPreference = UserPreference.getInstance(dataStore)
+            val userModel = userPreference.getSession().first()
+            if (userModel.isLogin) {
+                val token = userModel.token
+                viewModel.refreshStories()
+                viewModel.getStoriesFlow("Bearer $token").collectLatest { pagingData ->
+                    (recyclerView.adapter as? StoryPagingAdapter)?.submitData(pagingData)
+                }
+            } else {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finish()
+            }
+        }
+    }*/
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_maps -> {
+                startActivity(Intent(this, MapsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun logout() {
@@ -100,88 +149,7 @@ class MainActivity : AppCompatActivity() {
                 finishAffinity()
             } catch (e: Exception) {
                 Log.e("MainActivity", "Failed to logout", e)
-
             }
-        }
-    }
-
-    private fun loadStories() {
-        val userPreference = UserPreference.getInstance(dataStore)
-        currentPage = 1
-        isLoading = true
-        progressBar.visibility = View.VISIBLE
-
-        lifecycleScope.launch {
-            try {
-                val userModel = userPreference.getSession().first()
-                if (userModel.isLogin) {
-                    val token = userModel.token
-                    viewModel.fetchStories("Bearer $token", currentPage)
-                    viewModel.stories.observe(this@MainActivity) { stories ->
-                        (recyclerView.adapter as StoryAdapter).submitList(stories)
-                        isLoading = false
-                        progressBar.visibility = View.GONE
-                        recyclerView.smoothScrollToPosition(0)
-                    }
-                } else {
-                    startActivity(Intent(this@MainActivity, LoginActivity::class.java))
-                    finish()
-                }
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to load stories", e)
-            }
-        }
-    }
-
-    private fun loadMoreStories() {
-        val userPreference = UserPreference.getInstance(dataStore)
-        currentPage++
-        isLoading = true
-        progressBar.visibility = View.VISIBLE
-
-        lifecycleScope.launch {
-            val token = userPreference.getSession().first().token
-            if (token.isNotEmpty()) {
-                viewModel.fetchStories("Bearer $token", currentPage)
-                viewModel.stories.observe(this@MainActivity) { stories ->
-                    val currentList =
-                        (recyclerView.adapter as StoryAdapter).currentList.toMutableList()
-                    currentList.addAll(stories)
-                    (recyclerView.adapter as StoryAdapter).submitList(currentList)
-                    isLoading = false
-                    progressBar.visibility = View.GONE
-                }
-            } else {
-                isLoading = false
-                progressBar.visibility = View.GONE
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadStories()
-        startPolling()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        stopPolling()
-    }
-
-    private fun startPolling() {
-        handler.postDelayed(pollingRunnable, POLLING_INTERVAL)
-    }
-
-    private fun stopPolling() {
-        handler.removeCallbacks(pollingRunnable)
-    }
-
-    private val handler = Handler(Looper.getMainLooper())
-    private val pollingRunnable = object : Runnable {
-        override fun run() {
-            loadStories()
-            handler.postDelayed(this, POLLING_INTERVAL)
         }
     }
 

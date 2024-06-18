@@ -1,6 +1,8 @@
 package com.submission.mystoryappsv2.data.repository
 
+import StoryPagingSource
 import android.util.Log
+import androidx.lifecycle.liveData
 import com.submission.mystoryappsv2.data.pref.UserModel
 import com.submission.mystoryappsv2.data.pref.UserPreference
 import com.submission.mystoryappsv2.data.remote.ApiResponse
@@ -12,13 +14,17 @@ import kotlinx.coroutines.flow.first
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 
 class Repository private constructor(
     private val apiService: ApiService,
     private val userPreference: UserPreference
 ) {
 
-    
     suspend fun register(name: String, email: String, password: String): RegisterResponse {
         return apiService.register(name, email, password)
     }
@@ -31,22 +37,37 @@ class Repository private constructor(
         userPreference.saveSession(user)
     }
 
-
     suspend fun logout() {
         userPreference.logout()
     }
 
     suspend fun addStory(description: RequestBody, photo: MultipartBody.Part): ApiResponse {
         val token = userPreference.getSession().first().token
-        return apiService.addStory("Bearer $token", description, photo,null ,null)
+        return apiService.addStory("Bearer $token", description, photo, null, null)
     }
 
-    suspend fun getStories(token: String, page: Int? = null, size: Int? = null, location: Int? = 0): List<Story> {
-        val response = apiService.getStories(token, page, size, location)
-        if (!response.error) {
-            return response.listStory
-        } else {
-            throw Exception(response.message)
+    fun getStories(token: String): Flow<PagingData<Story>> {
+        return Pager(
+            config = PagingConfig(pageSize = 5, enablePlaceholders = false),
+            pagingSourceFactory = { StoryPagingSource(apiService, token) }
+        ).flow
+    }
+    fun getStoriesFlow(token: String): Flow<PagingData<Story>> {
+        return Pager(
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            pagingSourceFactory = { StoryPagingSource(apiService, token) }
+        ).flow
+    }
+
+    suspend fun getStoriesWithLocation(): List<Story> {
+        val location = 1 // Set the location parameter here (1 for true, 0 for false)
+        val token = userPreference.getSession().first().token
+        return try {
+            val response = apiService.getStories("Bearer $token", location = location)
+            response.listStory // Assuming listStory is the list of stories from your API response
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList() // Return an empty list in case of error
         }
     }
 
@@ -75,6 +96,7 @@ class Repository private constructor(
         }
         return null
     }
+
     private fun logResponseDetails(response: Response<*>) {
         Log.d("Repository", "Response URL: ${response.raw().request.url}")
         Log.d("Repository", "Response headers: ${response.headers()}")
@@ -83,6 +105,9 @@ class Repository private constructor(
             Log.e("Repository", "Error response: ${response.errorBody()?.string()}")
         }
     }
+
+
+
     companion object {
         @Volatile
         private var instance: Repository? = null
