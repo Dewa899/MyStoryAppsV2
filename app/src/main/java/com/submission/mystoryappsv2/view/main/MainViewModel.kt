@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val repository: Repository) : ViewModel() {
 
-    private var currentToken: String? = null
+    var currentToken: String? = null
     private val _storiesFlow = MutableStateFlow<PagingData<Story>>(PagingData.empty())
     val storiesFlow: StateFlow<PagingData<Story>> = _storiesFlow
     fun getStoriesFlow(token: String): Flow<PagingData<Story>> {

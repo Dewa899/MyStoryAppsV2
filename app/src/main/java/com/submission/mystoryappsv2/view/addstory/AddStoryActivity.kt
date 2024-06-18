@@ -116,6 +116,7 @@ class AddStoryActivity : AppCompatActivity() {
             viewModel.addStory(descriptionPart, photoPart).observe(this) { response ->
                 if (!response.error) {
                     Log.d("AddStoryActivity", "Story added successfully")
+                    setResult(RESULT_OK)
                     finish()
                 } else {
                     Log.e("AddStoryActivity", "Error adding story: ${response.message}")
