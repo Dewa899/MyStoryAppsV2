@@ -2,7 +2,6 @@ package com.submission.mystoryappsv2.data.repository
 
 import StoryPagingSource
 import android.util.Log
-import androidx.lifecycle.liveData
 import com.submission.mystoryappsv2.data.pref.UserModel
 import com.submission.mystoryappsv2.data.pref.UserPreference
 import com.submission.mystoryappsv2.data.remote.ApiResponse
@@ -18,8 +17,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.runBlocking
-
 class Repository private constructor(
     private val apiService: ApiService,
     private val userPreference: UserPreference
@@ -52,22 +49,16 @@ class Repository private constructor(
             pagingSourceFactory = { StoryPagingSource(apiService, token) }
         ).flow
     }
-    fun getStoriesFlow(token: String): Flow<PagingData<Story>> {
-        return Pager(
-            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
-            pagingSourceFactory = { StoryPagingSource(apiService, token) }
-        ).flow
-    }
 
     suspend fun getStoriesWithLocation(): List<Story> {
-        val location = 1 // Set the location parameter here (1 for true, 0 for false)
+        val location = 1
         val token = userPreference.getSession().first().token
         return try {
             val response = apiService.getStories("Bearer $token", location = location)
-            response.listStory // Assuming listStory is the list of stories from your API response
+            response.listStory
         } catch (e: Exception) {
             e.printStackTrace()
-            emptyList() // Return an empty list in case of error
+            emptyList()
         }
     }
 
