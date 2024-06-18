@@ -1,5 +1,6 @@
 package com.submission.mystoryappsv2.view.addstory
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.submission.mystoryappsv2.R
 import com.submission.mystoryappsv2.view.ViewModelFactory
 import com.submission.mystoryappsv2.view.custom.ClearableEditText
+import com.submission.mystoryappsv2.view.main.MainActivity
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -117,7 +119,11 @@ class AddStoryActivity : AppCompatActivity() {
                 if (!response.error) {
                     Log.d("AddStoryActivity", "Story added successfully")
                     setResult(RESULT_OK)
-                    finish()
+                    // Use Intent with flags to clear stack and start MainActivity
+                    val intent = Intent(this@AddStoryActivity, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    startActivity(intent)
                 } else {
                     Log.e("AddStoryActivity", "Error adding story: ${response.message}")
                 }
