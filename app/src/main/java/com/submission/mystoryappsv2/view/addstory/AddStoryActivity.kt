@@ -35,6 +35,7 @@ class AddStoryActivity : AppCompatActivity() {
         ViewModelFactory.getInstance(this)
     }
 
+
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             selectedPhotoUri = it

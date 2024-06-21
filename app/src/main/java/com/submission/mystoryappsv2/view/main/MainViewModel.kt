@@ -4,8 +4,6 @@ package com.submission.mystoryappsv2.view.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.submission.mystoryappsv2.data.remote.Story

@@ -11,7 +11,6 @@ import com.submission.mystoryappsv2.FlowTestUtils.getOrAwaitValue
 import com.submission.mystoryappsv2.LogMock
 import com.submission.mystoryappsv2.data.repository.Repository
 import com.submission.mystoryappsv2.view.story.StoryAdapter
-import com.submission.mystoryappsv2.data.remote.Story
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -47,13 +46,13 @@ class MainViewModelTest {
 
     @Before
     fun setUp() {
-        LogMock.mockLog()  // Mock the Log class
+        LogMock.mockLog()
         mainViewModel = MainViewModel(repository)
     }
 
     @After
     fun tearDown() {
-        LogMock.clearMock()  // Clear the Log mock
+        LogMock.clearMock()
     }
 
     @Test
@@ -79,6 +78,23 @@ class MainViewModelTest {
         assertEquals(DataDummy.generateStoryList()[0], differ.snapshot()[0])
     }
 
+    @Test
+    fun `Get Stories returns empty PagingData`() = runTest {
+        `when`(repository.getStories(token)).thenReturn(flowOf(PagingData.empty()))
+
+        val stories = mainViewModel.getStoriesFlow(token).getOrAwaitValue()
+
+        val differ = AsyncPagingDataDiffer(
+            diffCallback = StoryAdapter.DIFF_CALLBACK,
+            updateCallback = listUpdateCallback,
+            mainDispatcher = coroutinesTestRule.testDispatcher,
+            workerDispatcher = coroutinesTestRule.testDispatcher
+        )
+
+        differ.submitData(stories)
+
+        Assert.assertEquals(0, differ.snapshot().size)
+    }
 
     private val listUpdateCallback = object : ListUpdateCallback {
         override fun onInserted(position: Int, count: Int) {}
@@ -87,3 +103,4 @@ class MainViewModelTest {
         override fun onChanged(position: Int, count: Int, payload: Any?) {}
     }
 }
+

@@ -1,24 +1,20 @@
 package com.submission.mystoryappsv2
 
+import android.util.Log
+import org.mockito.MockedStatic
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 
 object LogMock {
-    private var mock: AutoCloseable? = null
+    private var logMock: MockedStatic<Log>? = null
+
     fun mockLog() {
-        if (mock == null) {
-            mock = MockitoAnnotations.openMocks(this)
-            Mockito.mockStatic(android.util.Log::class.java).apply {
-                `when`<Int> { android.util.Log.d(Mockito.anyString(), Mockito.anyString()) }.thenReturn(0)
-                `when`<Int> { android.util.Log.i(Mockito.anyString(), Mockito.anyString()) }.thenReturn(0)
-                `when`<Int> { android.util.Log.e(Mockito.anyString(), Mockito.anyString()) }.thenReturn(0)
-                `when`<Int> { android.util.Log.w(Mockito.anyString(), Mockito.anyString()) }.thenReturn(0)
-            }
+        if (logMock == null) {
+            logMock = Mockito.mockStatic(Log::class.java)
         }
     }
 
     fun clearMock() {
-        mock?.close()
-        mock = null
+        logMock?.close()
+        logMock = null
     }
 }
